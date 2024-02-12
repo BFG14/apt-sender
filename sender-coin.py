@@ -11,12 +11,13 @@ from aptos_sdk.transactions import (
     TransactionPayload,
 )
 from aptos_sdk.type_tag import StructTag, TypeTag
+from dotenv import load_dotenv
 
 load_dotenv()
 
 
 TARGET_WALLET_ADDRESS = os.getenv('TARGET_WALLET_ADDRESS')
-WETH_CONTRACT_ADDRESS = f'0x1::coin::CoinStore<{os.getenv('COIN_CONTRACT_ADDRESS')}>'
+WETH_CONTRACT_ADDRESS = os.getenv('COIN_CONTRACT_ADDRESS')
 NODE_URL = os.getenv('NODE_URL')
 
 async def send_weth(private_key):
@@ -29,7 +30,8 @@ async def send_weth(private_key):
         # Get the WETH balance
         resource = await rest_client.account_resource(account.address(), WETH_CONTRACT_ADDRESS)
         balance = int(resource["data"]["coin"]["value"])
-        print(f"coin balance for {account.address()}: {balance}")
+        ticker = WETH_CONTRACT_ADDRESS.split("::")[2].split("<")[0]
+        print(f"{ticker} balance for {account.address()}: {balance}")
 
         # Transfer all WETH to the target wallet
 
@@ -37,7 +39,7 @@ async def send_weth(private_key):
         payload = {
             "function": "0x1::aptos_account::transfer_coins",
             "type_arguments": [
-                WETH_CONTRACT_ADDRESS
+                f'0x1::coin::CoinStore<{WETH_CONTRACT_ADDRESS}>'
             ],
             "arguments": [
                 TARGET_WALLET_ADDRESS,
@@ -48,13 +50,17 @@ async def send_weth(private_key):
         txn_hash = await rest_client.submit_transaction(account, payload)
         await rest_client.wait_for_transaction(txn_hash)
 
-        print(f"All coins transferred from {account.address()} to {TARGET_WALLET_ADDRESS}")
+        load_dotenv()
+
+        print(f"All {ticker} transferred from {account.address()} to {TARGET_WALLET_ADDRESS}")
 
         await rest_client.close()
     except Exception as e:
         with open('error_log.txt', 'a') as file:
-            file.write(f"{account.address()}: {str(e)}\n")  # Write the error in the desired format
-        print(f"Error occurred for {account.address()}: {str(e)}")
+            error_message = f"Error occurred for {account.address()}: {str(e)}"
+            error_type = type(e).__name__
+            file.write(f"{account.address()}: {error_type} - {error_message}\n")  # Write the error in the desired format
+        print(f"Error occurred for {account.address()}: {error_type} - {str(e)}")
 
 async def main():
     # Read private keys from the file
