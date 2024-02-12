@@ -14,13 +14,9 @@ from aptos_sdk.type_tag import StructTag, TypeTag
 
 load_dotenv()
 
-# Specify your target wallet address
-TARGET_WALLET_ADDRESS = "0x2f9b85e4bfdc5f047d0242f7a5cff210a5bf39b35f7ccf83db0cf6873b19914d"
-# Specify the contract address for WETH
-WETH_CONTRACT_ADDRESS = '0x1::coin::CoinStore<0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::WETH>'
 
 TARGET_WALLET_ADDRESS = os.getenv('TARGET_WALLET_ADDRESS')
-WETH_CONTRACT_ADDRESS = os.getenv('COIN_CONTRACT_ADDRESS')
+WETH_CONTRACT_ADDRESS = f'0x1::coin::CoinStore<{os.getenv('COIN_CONTRACT_ADDRESS')}>'
 NODE_URL = os.getenv('NODE_URL')
 
 async def send_weth(private_key):
