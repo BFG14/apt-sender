@@ -3,3 +3,4 @@ seeds.txt
 addresses.txt
 private_keys.txt
 error_log.txt
+.env
